@@ -133,7 +133,7 @@
                                 (begin
                                   (set-color! v gray)
                                   (set-distance! v (+ 1 (distance-of u)))
-                                  (set-predecessor! v u)
+                                  (set-predecessor! v (vertex-of u))
                                   (set! Q (cons v Q))))) ; push
                           (neighbors-of u G))
                 (set-color! u black))
@@ -144,27 +144,21 @@
 ;;
 ;; > (bfs graph1)
 ;; ((a black () 0 (b c d))
-;;  (b black (a black () 0 (b c d)) 1 (a d))
-;;  (c black (a black () 0 (b c d)) 1 (a))
-;;  (d black (a black () 0 (b c d)) 1 (a b)))
+;;  (b black a 1 (a d))
+;;  (c black a 1 (a))
+;;  (d black a 1 (a b)))
 
 ;; Interpreter Input/Output:
 ;;
 ;; > (bfs graph2)
 ;; ((s black () 0 (r w))
-;;  (r black (s black () 0 (r w)) 1 (s v))
-;;  (t black (w black (s black () 0 (r w)) 1 (s t x)) 2 (u w x))
-;;  (u black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (t x y))
-;;  (v black (r black (s black () 0 (r w)) 1 (s v)) 2 (r))
-;;  (w black (s black () 0 (r w)) 1 (s t x))
-;;  (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;  (y black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (u x)))
+;;  (r black s 1 (s v))
+;;  (t black w 2 (u w x))
+;;  (u black x 3 (t x y))
+;;  (v black r 2 (r))
+;;  (w black s 1 (s t x))
+;;  (x black w 2 (t u w y))
+;;  (y black x 3 (u x)))
 
 
 ;; Now redefine `adjlist->graph` to include initialization ...
@@ -235,7 +229,7 @@
                                 (begin
                                   (set-color! v gray)
                                   (set-distance! v (+ 1 (distance-of u)))
-                                  (set-predecessor! v u)
+                                  (set-predecessor! v (vertex-of u))
                                   (set! Q (cons v Q))))) ; push
                           (neighbors-of u G))
                 (set-color! u black))
@@ -246,27 +240,21 @@
 ;;
 ;; > (bfs graph1)
 ;; ((a black () 0 (b c d))
-;;  (b black (a black () 0 (b c d)) 1 (a d))
-;;  (c black (a black () 0 (b c d)) 1 (a))
-;;  (d black (a black () 0 (b c d)) 1 (a b)))
+;;  (b black a 1 (a d))
+;;  (c black a 1 (a))
+;;  (d black a 1 (a b)))
 
 ;; Interpreter Input/Output:
 ;;
 ;; > (bfs graph2)
 ;; ((s black () 0 (r w))
-;;  (r black (s black () 0 (r w)) 1 (s v))
-;;  (t black (w black (s black () 0 (r w)) 1 (s t x)) 2 (u w x))
-;;  (u black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (t x y))
-;;  (v black (r black (s black () 0 (r w)) 1 (s v)) 2 (r))
-;;  (w black (s black () 0 (r w)) 1 (s t x))
-;;  (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;  (y black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (u x)))
+;;  (r black s 1 (s v))
+;;  (t black w 2 (u w x))
+;;  (u black x 3 (t x y))
+;;  (v black r 2 (r))
+;;  (w black s 1 (s t x))
+;;  (x black w 2 (t u w y))
+;;  (y black x 3 (u x)))
 
 
 ;; Now make recursion explicit, still using mutable data.
@@ -290,7 +278,7 @@
                         (begin
                           (set-color! v gray)
                           (set-distance! v (+ 1 (distance-of u)))
-                          (set-predecessor! v u)
+                          (set-predecessor! v (vertex-of u))
                           (set! Q (cons v Q))))) ; push
                   (neighbors-of u G))
         (set-color! u black)
@@ -302,28 +290,22 @@
 ;; > (define graph1 (adjlist->graph adjlist1))
 ;; > (bfs graph1 (list (car graph1)))
 ;; ((a black () 0 (b c d))
-;;  (b black (a black () 0 (b c d)) 1 (a d))
-;;  (c black (a black () 0 (b c d)) 1 (a))
-;;  (d black (a black () 0 (b c d)) 1 (a b)))
+;;  (b black a 1 (a d))
+;;  (c black a 1 (a))
+;;  (d black a 1 (a b)))
 
 ;; Interpreter Input/Output:
 ;;
 ;; > (define graph2 (adjlist->graph adjlist2))
 ;; > (bfs graph2 (list (car graph2)))
 ;; ((s black () 0 (r w))
-;;  (r black (s black () 0 (r w)) 1 (s v))
-;;  (t black (w black (s black () 0 (r w)) 1 (s t x)) 2 (u w x))
-;;  (u black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (t x y))
-;;  (v black (r black (s black () 0 (r w)) 1 (s v)) 2 (r))
-;;  (w black (s black () 0 (r w)) 1 (s t x))
-;;  (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;  (y black
-;;     (x black (w black (s black () 0 (r w)) 1 (s t x)) 2 (t u w y))
-;;     3
-;;     (u x)))
+;;  (r black s 1 (s v))
+;;  (t black w 2 (u w x))
+;;  (u black x 3 (t x y))
+;;  (v black r 2 (r))
+;;  (w black s 1 (s t x))
+;;  (x black w 2 (t u w y))
+;;  (y black x 3 (u x)))
 
 
 ;; This demonstrates that breadth-first search can be expressed as a recursive algorithm.
@@ -340,3 +322,5 @@
 ;; For reference, see "Purely Functional Data Structures" by Chris Okasaki.
 
 ;; This program was developed using the Gambit Scheme interpreter: http://gambitscheme.org .
+
+;; See also: https://stackoverflow.com/questions/2549541/performing-breadth-first-search-recursively?rq=1 .
