@@ -179,6 +179,9 @@
 ;; Return an initialized graph data structure given an adjacency list
 ;; by adding color, predecessor, and distance attributes
 ;; and setting them to initial values.
+;;
+;; Assuming that first element of adjacency list is root
+;; to avoid importing or implementing list processing libraries.
 (define (adjlist->graph adjacency-list)
   (let ((root (car adjacency-list))
         (rest (cdr adjacency-list)))
@@ -277,9 +280,6 @@
 ;;
 ;; Requires passing initialized queue along with arguments
 ;; (at no cost due to tail recursion).
-;;
-;; Assume that first element of adjacency list is root
-;; to avoid importing or implementing list processing libraries.
 (define (bfs G Q)
   (if (not (null? Q))
       (let ((u (pop! Q)))
@@ -325,12 +325,60 @@
 ;; are theoretically equivalent. This is also the perspective of lambda calculus.
 ;;
 ;; Tail call optimization is necessary to make it work in practice, however.
+;;
+;; Another discussion of recursive breadth-first search can be found on Stack Overflow:
+;; https://stackoverflow.com/questions/2549541/performing-breadth-first-search-recursively?rq=1 .
+;;
+;; The recursive algorithm could most likely be implemented effectively in Python and other languages.
+
+
+;; Becuase the recursive implementation was derived by refactoring the "iterative" version,
+;; it is expected to have identical running time. This could be verified by adding a counter
+;; for iterations and recursive calls.
+;;
+;; The implementation of the graph as an association list is highly inefficient, however
+;; it could easily be replaced with a hash table.
+;;
+;; Compiling the source to C with the Gambit C compiler would be expected to produce
+;; a highly efficient program.
+
 
 ;; A purely functional implementation would require the use of an immutable data structure.
 ;; This is possible but not necessarily easy to implement.
 ;;
 ;; For reference, see "Purely Functional Data Structures" by Chris Okasaki.
 
-;; This program was developed using the Gambit Scheme interpreter: http://gambitscheme.org .
 
-;; See also: https://stackoverflow.com/questions/2549541/performing-breadth-first-search-recursively?rq=1 .
+;; This program was developed using the Gambit Scheme interpreter: http://gambitscheme.org .
+;;
+;; To build Gambit, first obtain the source:
+;;
+;;     $ git clone https://github.com/gambit/gambit.git
+;;
+;; Then checkout the lates release and follow the instructions in INSTALL.txt:
+;;
+;;     $ git checkout v4.8.8
+;;     $ ./configure
+;;     $ make current-gsc-boot
+;;     $ ./configure --enable-single-host
+;;     $ make -j4 from-scratch
+;;     $ make check
+;;
+;; Install Gambit with `sudo make install` or create a Debian package with Checkinstall
+;; [https://wiki.debian.org/CheckInstall] :
+;;
+;;     $ sudo checkinstall
+;;
+;; For interactive debugging in GNU Emacs, add the following lines to .emacs:
+;;
+;;     (add-to-list 'load-path "/usr/local/Gambit/share/emacs/site-lisp/")
+;;     (require 'gambit)
+;;     (setq scheme-program-name "/usr/local/Gambit/bin/gsi -:s,d-")
+;;
+;; Run with `M-x run-scheme` .
+;;
+;; The manual can be found in /usr/local/Gambit/doc/gambit.pdf .
+
+
+;; The specification of the relevant version of Scheme can be found here:
+;; http://www.schemers.org/Documents/Standards/R5RS/r5rs.pdf
