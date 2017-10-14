@@ -104,6 +104,19 @@
 (define (set-distance! vertex distance)
   (set-car! (cdddr vertex) distance))
 
+;; Define Mutable Queue Data Structure.
+(define queue list)
+(define-syntax push!
+  (syntax-rules ()
+    ((_ x Q)
+     (set! Q (cons x Q)))))
+(define-syntax pop!
+  (syntax-rules ()
+    ((_ Q)
+     (let ((x (car Q)))
+       (set! Q (cdr Q))
+       x))))
+
 ;; Return mutated graph G as a breadth-first tree.
 ;;
 ;; Near literal transcription of iterative BFS algorithm
@@ -122,19 +135,18 @@
     (set-distance! s 0)                  ;
     (set-predecessor! s nil)             ;
     (let ((Q nil))
-      (set! Q (cons s Q)) ; push
+      (push! s Q)
       (let loop () ; iteration with "named let" is just tail recursion
         (if (not (null? Q))
             (begin
-              (let ((u (car Q))) ; pop
-                (set! Q (cdr Q)) ; pop
+              (let ((u (pop! Q)))
                 (for-each (lambda (v)
                             (if (eq? (color-of v) white)
                                 (begin
                                   (set-color! v gray)
                                   (set-distance! v (+ 1 (distance-of u)))
                                   (set-predecessor! v (vertex-of u))
-                                  (set! Q (cons v Q))))) ; push
+                                  (push! v Q))))
                           (neighbors-of u G))
                 (set-color! u black))
               (loop))
@@ -218,19 +230,18 @@
 (define (bfs G)
   (let ((s (car G)))
     (let ((Q nil))
-      (set! Q (cons s Q)) ; push
+      (push! s Q)
       (let loop () ; iteration with "named let" is just tail recursion
         (if (not (null? Q))
             (begin
-              (let ((u (car Q))) ; pop
-                (set! Q (cdr Q)) ; pop
+              (let ((u (pop! Q)))
                 (for-each (lambda (v)
                             (if (eq? (color-of v) white)
                                 (begin
                                   (set-color! v gray)
                                   (set-distance! v (+ 1 (distance-of u)))
                                   (set-predecessor! v (vertex-of u))
-                                  (set! Q (cons v Q))))) ; push
+                                  (push! v Q))))
                           (neighbors-of u G))
                 (set-color! u black))
               (loop))
@@ -271,15 +282,14 @@
 ;; to avoid importing or implementing list processing libraries.
 (define (bfs G Q)
   (if (not (null? Q))
-      (let ((u (car Q))  ; pop
-            (Q (cdr Q))) ;
+      (let ((u (pop! Q)))
         (for-each (lambda (v)
                     (if (eq? (color-of v) white)
                         (begin
                           (set-color! v gray)
                           (set-distance! v (+ 1 (distance-of u)))
                           (set-predecessor! v (vertex-of u))
-                          (set! Q (cons v Q))))) ; push
+                          (push! v Q))))
                   (neighbors-of u G))
         (set-color! u black)
         (bfs G Q))
@@ -288,7 +298,7 @@
 ;; Interpreter Input/Output:
 ;;
 ;; > (define graph1 (adjlist->graph adjlist1))
-;; > (bfs graph1 (list (car graph1)))
+;; > (bfs graph1 (queue (car graph1)))
 ;; ((a black () 0 (b c d))
 ;;  (b black a 1 (a d))
 ;;  (c black a 1 (a))
@@ -297,7 +307,7 @@
 ;; Interpreter Input/Output:
 ;;
 ;; > (define graph2 (adjlist->graph adjlist2))
-;; > (bfs graph2 (list (car graph2)))
+;; > (bfs graph2 (queue (car graph2)))
 ;; ((s black () 0 (r w))
 ;;  (r black s 1 (s v))
 ;;  (t black w 2 (u w x))
