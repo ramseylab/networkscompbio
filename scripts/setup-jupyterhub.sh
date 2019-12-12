@@ -52,13 +52,16 @@ sudo apt-get install -y lynx
 sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node
 sudo touch /var/log/jupyterhub.log
 sudo chown jupyterhub.jupyterhub /var/log/jupyterhub.log
-cat <<EOF
-EOT >>run-jupyterhub.sh
+cat <<EOT >>run-jupyterhub.sh
 #!/usr/bin/env bash
 nohup sudo su - jupyterhub -c "exec /home/ubuntu/${CLASSNAME}/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py >/var/log/jupyterhub.log 2>&1"
-EOF
+EOT
 chmod a+x run-jupyterhub.sh
 ${CLASSNAME}/bin/pip3 install sudospawner
 sudo groupadd jupyterhubusers
 sudo usermod -a -G jupyterhubusers ramseyst
 sudo usermod -a -G shadow jupyterhub
+sudo cat <<EOT >> /etc/sudoers.d/jupyterhub
+Cmnd_Alias JUPYTER_CMD = /home/ubuntu/csx46/bin/sudospawner
+jupyterhub ALL=(%jupyterhubusers) NOPASSWD:JUPYTER_CMD
+EOT
