@@ -36,7 +36,10 @@ sed -i "s|#c.JupyterHub.hub_bind_url = ''|c.JupyterHub.hub_bind_url = 'http://12
 sed -i "s|#c.JupyterHub.cleanup_servers = True|c.JupyterHub.cleanup_servers = False|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.pid_file = ''|c.JupyterHub.pid_file = '/srv/jupyterhub/jupyterhub.pid'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.db_url = 'sqlite:///jupyterhub.sqlite'|c.JupyterHub.db_url = 'sqlite:///srv/jupyterhub/jupyterhub.sqlite'|g" jupyterhub_config.py
+sed -i "s|#c.JupyterHub.spawner_class = 'jupyterhub.spawner.LocalProcessSpawner'|c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'|g" jupyterhub_config.py
 echo "c.ConfigurableHTTPProxy.pid_file = '/srv/jupyterhub/jupyterhub-proxy.pid'" >> jupyterhub_config.py
+echo "SudoSpawner.sudospawner_path = '/home/ubuntu/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
+echo "c.PAMAuthenticator.open_sessions = False" >> jupyterhub_config.py
 sudo cp jupyterhub_config.py /etc/jupyterhub
 sudo chmod 755 /etc/letsencrypt/live
 sudo chmod 755 /etc/letsencrypt/archive
@@ -55,6 +58,7 @@ EOT >>run-jupyterhub.sh
 nohup sudo su - jupyterhub -c "exec /home/ubuntu/${CLASSNAME}/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py >/var/log/jupyterhub.log 2>&1"
 EOF
 chmod a+x run-jupyterhub.sh
-
-
-
+${CLASSNAME}/bin/pip3 install sudospawner
+sudo groupadd jupyterhubusers
+sudo usermod -a -G jupyterhubusers ramseyst
+sudo usermod -a -G shadow jupyterhub
