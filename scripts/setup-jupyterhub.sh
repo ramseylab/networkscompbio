@@ -31,7 +31,7 @@ sudo mkdir -p /etc/jupyterhub
 sed -i "s|#c.JupyterHub.cookie_secret_file = 'jupyterhub_cookie_secret'|c.JupyterHub.cookie_secret_file = '/srv/jupyterhub/jupyterhub_cookie_secret'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.admin_users = set()|c.JupyterHub.admin_users = {'${INSTRUCTOR_ONID}'}|g" jupyterhub_config.py
 sed -i "s|#c.Authenticator.admin_users = set()|c.Authenticator.admin_users = {'${INSTRUCTOR_ONID}'}|g" jupyterhub_config.py
-sed -i "s|#c.JupyterHub.bind_url = 'http://:8000'|c.JupyterHub.bind_url = 'http://0.0.0.0:443'|g" jupyterhub_config.py
+sed -i "s|#c.JupyterHub.bind_url = 'http://:8000'|c.JupyterHub.bind_url = 'http://0.0.0.0:8000'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.hub_bind_url = ''|c.JupyterHub.hub_bind_url = 'http://127.0.0.0:8081'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.cleanup_servers = True|c.JupyterHub.cleanup_servers = False|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.pid_file = ''|c.JupyterHub.pid_file = '/srv/jupyterhub/jupyterhub.pid'|g" jupyterhub_config.py
@@ -49,7 +49,7 @@ sudo mkdir -p /srv/jupyterhub
 sudo chown jupyterhub.jupyterhub /srv/jupyterhub
 sudo mkdir -p /var/log
 sudo apt-get install -y lynx
-sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node
+# sudo setcap CAP_NET_BIND_SERVICE=+eip /usr/bin/node  # no longer need this; saving for posterity
 sudo touch /var/log/jupyterhub.log
 sudo chown jupyterhub.jupyterhub /var/log/jupyterhub.log
 cat <<EOT >>run-jupyterhub.sh
@@ -65,3 +65,14 @@ sudo cat <<EOT >> /etc/sudoers.d/jupyterhub
 Cmnd_Alias JUPYTER_CMD = /home/ubuntu/csx46/bin/sudospawner
 jupyterhub ALL=(%jupyterhubusers) NOPASSWD:JUPYTER_CMD
 EOT
+sudo apt-get install -y nginx
+sudo cat <<EOF >> /etc/nginx/nginx.conf
+stream {
+  server {
+      listen     443;
+      proxy_pass 0.0.0.0:8000;
+  }
+}
+EOF
+sudo service nginx stop
+
