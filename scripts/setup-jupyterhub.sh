@@ -117,15 +117,22 @@ sudo service nginx stop
 echo "installing R"
 sudo apt install apt-transport-https software-properties-common
 sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-sudo add-apt-repository "deb http://cran.rstudio.com/bin/linux/ubuntu $(lsb_release -sc)/"
+sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
 sudo apt-get update -y
 sudo apt-get upgrade -y
 sudo apt-get install -y r-base
-Rscript -e 'install.packages("IRkernel")'
+mkdir -p /home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6
+Rscript -e 'install.packages("IRkernel", lib="/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6")'
 source /home/ubuntu/csx46/bin/activate
 Rscript -e 'IRkernel::installspec(prefix="/home/ubuntu/csx46")'
 deactivate
-sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.4:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g' /etc/R/Renviron
+exit
+sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g' /etc/R/Renviron
 echo "installing Ubuntu packages needed by Tidyverse"
 sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
 
+echo "installing R packages for the class"
+Rscript -e 'install.packages(c("tidyverse","igraph"))'
+
+echo "installing python packages for the class"
+${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx
