@@ -65,17 +65,21 @@ echo "creating Linux accounts that are needed"
 sudo adduser -c "jupyterhub daemon" jupyterhub
 sudo adduser -c "JupyterHub Main Administrator" ${INSTRUCTOR_ONID}
 
-echo "creating directories needed by JupyterHub"
+echo "creating directories and logfile needed by JupyterHub"
 sudo mkdir -p /srv/jupyterhub
 sudo chown jupyterhub.jupyterhub /srv/jupyterhub
 sudo mkdir -p /var/log
 sudo touch /var/log/jupyterhub.log
 sudo chown jupyterhub.jupyterhub /var/log/jupyterhub.log
-cat <<EOT >>run-jupyterhub.sh
+
+echo "creating run-jupyterhub.sh script"
+cat <<EOT >run-jupyterhub.sh
 #!/usr/bin/env bash
 nohup sudo su - jupyterhub -c "exec /home/ubuntu/${CLASSNAME}/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py >/var/log/jupyterhub.log 2>&1" > /tmp/nohup.out 2>&1
 EOT
 chmod a+x run-jupyterhub.sh
+
+echo "configuring jupyterhub to use sudospawner"
 ${CLASSNAME}/bin/pip3 install sudospawner
 sudo groupadd jupyterhubusers
 sudo usermod -a -G jupyterhubusers ramseyst
@@ -100,7 +104,14 @@ stream {
 }
 EOF
 sudo mv nginx.conf /etc/nginx/nginx.conf
-rm nginx-conf-suffix
+cat <<EOF > sites-enabled-default
+server {
+	listen 80 default_server;
+	server_name _;
+	return 301 https://$host$request_uri;
+}
+EOF
+sudo mv sites-enabled-default /etc/nginx/sites-enabled/default
 sudo service nginx stop
 
 echo "installing R"
@@ -114,3 +125,7 @@ Rscript -e 'install.packages("IRkernel")'
 source /home/ubuntu/csx46/bin/activate
 Rscript -e 'IRkernel::installspec(prefix="/home/ubuntu/csx46")'
 deactivate
+sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.4:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g' /etc/R/Renviron
+echo "installing Ubuntu packages needed by Tidyverse"
+sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
+
