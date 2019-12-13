@@ -3,7 +3,8 @@
 set -o nounset -o pipefail -o errexit
 
 CLASSNAME=csx46
-INSTRUCTOR_ONID=ramseyst
+DOMAIN_NAME=mydomain.com
+INSTRUCTOR_USERNAME=ramseyst
 
 sudo apt-get update
 
@@ -39,12 +40,12 @@ domain name"
 echo "creating JupyterHub config file"
 ${CLASSNAME}/bin/jupyterhub --generate-config
 cp jupyterhub_config.py jupyterhub_config.py.ORIG
-sed -i "s|#c.JupyterHub.ssl_key = ''|c.JupyterHub.ssl_key = '/etc/letsencrypt/live/${CLASSNAME}.saramsey.org/privkey.pem'|g" jupyterhub_config.py
-sed -i "s|#c.JupyterHub.ssl_cert = ''|c.JupyterHub.ssl_cert = '/etc/letsencrypt/live/${CLASSNAME}.saramsey.org/fullchain.pem'|g" jupyterhub_config.py
+sed -i "s|#c.JupyterHub.ssl_key = ''|c.JupyterHub.ssl_key = '/etc/letsencrypt/live/${CLASSNAME}.${DOMAIN_NAME}/privkey.pem'|g" jupyterhub_config.py
+sed -i "s|#c.JupyterHub.ssl_cert = ''|c.JupyterHub.ssl_cert = '/etc/letsencrypt/live/${CLASSNAME}.${DOMAIN_NAME}/fullchain.pem'|g" jupyterhub_config.py
 sudo mkdir -p /etc/jupyterhub
 sed -i "s|#c.JupyterHub.cookie_secret_file = 'jupyterhub_cookie_secret'|c.JupyterHub.cookie_secret_file = '/srv/jupyterhub/jupyterhub_cookie_secret'|g" jupyterhub_config.py
-sed -i "s|#c.JupyterHub.admin_users = set()|c.JupyterHub.admin_users = {'${INSTRUCTOR_ONID}'}|g" jupyterhub_config.py
-sed -i "s|#c.Authenticator.admin_users = set()|c.Authenticator.admin_users = {'${INSTRUCTOR_ONID}'}|g" jupyterhub_config.py
+sed -i "s|#c.JupyterHub.admin_users = set()|c.JupyterHub.admin_users = {'${INSTRUCTOR_USERNAME}'}|g" jupyterhub_config.py
+sed -i "s|#c.Authenticator.admin_users = set()|c.Authenticator.admin_users = {'${INSTRUCTOR_USERNAME}'}|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.bind_url = 'http://:8000'|c.JupyterHub.bind_url = 'http://0.0.0.0:8000'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.hub_bind_url = ''|c.JupyterHub.hub_bind_url = 'http://127.0.0.1:8081'|g" jupyterhub_config.py
 sed -i "s|#c.JupyterHub.cleanup_servers = True|c.JupyterHub.cleanup_servers = False|g" jupyterhub_config.py
@@ -59,11 +60,11 @@ sudo cp jupyterhub_config.py /etc/jupyterhub
 echo "setting up SSL certificates"
 sudo chmod 755 /etc/letsencrypt/live
 sudo chmod 755 /etc/letsencrypt/archive
-sudo chmod 644 /etc/letsencrypt/archive/${CLASSNAME}.saramsey.org/privkey1.pem
+sudo chmod 644 /etc/letsencrypt/archive/${CLASSNAME}.${DOMAIN_NAME}/privkey1.pem
 
 echo "creating Linux accounts that are needed"
 sudo adduser -c "jupyterhub daemon" jupyterhub
-sudo adduser -c "JupyterHub Main Administrator" ${INSTRUCTOR_ONID}
+sudo adduser -c "JupyterHub Main Administrator" ${INSTRUCTOR_USERNAME}
 
 echo "creating directories and logfile needed by JupyterHub"
 sudo mkdir -p /srv/jupyterhub
@@ -82,10 +83,10 @@ chmod a+x run-jupyterhub.sh
 echo "configuring jupyterhub to use sudospawner"
 ${CLASSNAME}/bin/pip3 install sudospawner
 sudo groupadd jupyterhubusers
-sudo usermod -a -G jupyterhubusers ramseyst
+sudo usermod -a -G jupyterhubusers ${INSTRUCTOR_USERNAME}
 sudo usermod -a -G shadow jupyterhub
 cat <<EOT >>sudoers-jupyterhub
-Cmnd_Alias JUPYTER_CMD = /home/ubuntu/csx46/bin/sudospawner
+Cmnd_Alias JUPYTER_CMD = /home/ubuntu/${CLASSNAME}/bin/sudospawner
 jupyterhub ALL=(%jupyterhubusers) NOPASSWD:JUPYTER_CMD
 EOT
 sudo mv sudoers-jupyterhub /etc/sudoers.d/jupyterhub
@@ -123,8 +124,8 @@ sudo apt-get upgrade -y
 sudo apt-get install -y r-base
 mkdir -p /home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6
 Rscript -e 'install.packages("IRkernel", lib="/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6")'
-source /home/ubuntu/csx46/bin/activate
-Rscript -e 'IRkernel::installspec(prefix="/home/ubuntu/csx46")'
+source /home/ubuntu/${CLASSNAME}/bin/activate
+Rscript -e "IRkernel::installspec(prefix='/home/ubuntu/${CLASSNAME}')"
 deactivate
 exit
 sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g' /etc/R/Renviron
