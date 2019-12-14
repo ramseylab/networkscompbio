@@ -137,9 +137,14 @@ echo "installing R packages for the class"
 Rscript -e 'install.packages(c("tidyverse","igraph"))'
 
 echo "installing python packages for the class"
-${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx
+${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx pympler statsmodels
+
+echo "graphviz"
+sudo apt-get install -y graphviz libgraphviz-dev
+${CLASSNAME}/bin/pip3 install graphviz pydot pygraphviz
 
 sudo mkdir /templates
 sudo chown ubuntu.ubuntu /templates
 sudo su - ${INSTRUCTOR_USERNAME} -c "ln -s /templates templates"
 sudo chown ubuntu.ubuntu /home/${INSTRUCTOR_USERNAME}/templates
+
