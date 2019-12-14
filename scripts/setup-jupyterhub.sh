@@ -5,6 +5,7 @@ set -o nounset -o pipefail -o errexit
 CLASSNAME=csx46
 DOMAIN_NAME=mydomain.com
 INSTRUCTOR_USERNAME=ramseyst
+EMAIL_ADDRESS="stephen.ramsey@oregonstate.edu"
 
 sudo apt-get update
 
@@ -35,7 +36,7 @@ ${CLASSNAME}/bin/python3 -m bash_kernel.install
 git clone https://github.com/letsencrypt/letsencrypt
 echo "About to run letsencrypt; select (1) to spin up a temporary webserver; enter the hostname when prompted for the 
 domain name"
-./letsencrypt/letsencrypt-auto certonly --debug
+./letsencrypt/letsencrypt-auto certonly --debug --email ${EMAIL_ADDRESS} --domains ${CLASSNAME}.${DOMAIN_NAME} --standalone 
 
 echo "creating JupyterHub config file"
 ${CLASSNAME}/bin/jupyterhub --generate-config
@@ -137,3 +138,8 @@ Rscript -e 'install.packages(c("tidyverse","igraph"))'
 
 echo "installing python packages for the class"
 ${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx
+
+sudo mkdir /templates
+sudo chown ubuntu.ubuntu /templates
+sudo su - ${INSTRUCTOR_USERNAME} -c "ln -s /templates templates"
+sudo chown ubuntu.ubuntu /home/${INSTRUCTOR_USERNAME}/templates
