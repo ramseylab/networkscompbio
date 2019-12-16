@@ -56,6 +56,7 @@ sed -i "s|#c.JupyterHub.spawner_class = 'jupyterhub.spawner.LocalProcessSpawner'
 echo "c.ConfigurableHTTPProxy.pid_file = '/srv/jupyterhub/jupyterhub-proxy.pid'" >> jupyterhub_config.py
 echo "c.PAMAuthenticator.open_sessions = False" >> jupyterhub_config.py
 echo "c.Spawner.cmd = '/home/ubuntu/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
+echo "c.SudoSpawner.sudospawner_path = '/home/ubuntu/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
 sudo cp jupyterhub_config.py /etc/jupyterhub
 
 echo "setting up SSL certificates"
