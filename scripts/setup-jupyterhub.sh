@@ -134,8 +134,11 @@ sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/
 echo "installing Ubuntu packages needed by Tidyverse"
 sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
 
+echo "installing texlive"
+sudo apt-get install -y texlive
+
 echo "installing R packages for the class"
-Rscript -e 'install.packages(c("tidyverse","igraph"))'
+Rscript -e 'install.packages(c("tidyverse", "igraph", "corpcor", "gdata", "lattice", "lpSolve", "plyr"))'
 
 echo "installing python packages for the class"
 ${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx pympler statsmodels
@@ -144,6 +147,7 @@ echo "graphviz"
 sudo apt-get install -y graphviz libgraphviz-dev
 ${CLASSNAME}/bin/pip3 install graphviz pydot pygraphviz
 
+echo "setting up Jupyter notebook templates directory"
 sudo mkdir /templates
 sudo chown ubuntu.ubuntu /templates
 sudo su - ${INSTRUCTOR_USERNAME} -c "ln -s /templates templates"
