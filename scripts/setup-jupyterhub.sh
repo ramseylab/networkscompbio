@@ -144,7 +144,7 @@ echo "installing texlive"
 sudo apt-get install -y texlive
 
 echo "installing R packages for the class"
-Rscript -e 'install.packages(c("tidyverse", "igraph", "corpcor", "gdata", "lattice", "lpSolve", "plyr"))'
+Rscript -e 'install.packages(c("tidyverse", "igraph", "corpcor", "gdata", "lattice", "lpSolve", "plyr", "zoo"))'
 
 echo "installing python packages for the class"
 ${CLASSNAME}/bin/pip3 install numpy scipy scikit-learn pandas matplotlib bintrees graphviz python-igraph networkx pympler statsmodels
