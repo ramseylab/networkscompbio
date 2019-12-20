@@ -31,7 +31,7 @@ virtualenv ${CLASSNAME}
 ${CLASSNAME}/bin/pip3 install jupyterhub
 ${CLASSNAME}/bin/pip3 install notebook
 ${CLASSNAME}/bin/pip3 install bash_kernel
-export JUPYTER_DATA_DIR=/home/ubuntu/${CLASSNAME}/share/jupyter
+export JUPYTER_DATA_DIR=${HOME}/${CLASSNAME}/share/jupyter
 ${CLASSNAME}/bin/python3 -m bash_kernel.install
 git clone https://github.com/letsencrypt/letsencrypt
 echo "About to run letsencrypt; select (1) to spin up a temporary webserver; enter the hostname when prompted for the 
@@ -55,8 +55,8 @@ sed -i "s|#c.JupyterHub.db_url = 'sqlite:////jupyterhub.sqlite'|c.JupyterHub.db_
 sed -i "s|#c.JupyterHub.spawner_class = 'jupyterhub.spawner.LocalProcessSpawner'|c.JupyterHub.spawner_class = 'sudospawner.SudoSpawner'|g" jupyterhub_config.py
 echo "c.ConfigurableHTTPProxy.pid_file = '/srv/jupyterhub/jupyterhub-proxy.pid'" >> jupyterhub_config.py
 echo "c.PAMAuthenticator.open_sessions = False" >> jupyterhub_config.py
-echo "c.Spawner.cmd = '/home/ubuntu/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
-echo "c.SudoSpawner.sudospawner_path = '/home/ubuntu/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
+echo "c.Spawner.cmd = '${HOME}/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
+echo "c.SudoSpawner.sudospawner_path = '${HOME}/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
 sudo cp jupyterhub_config.py /etc/jupyterhub
 
 echo "setting up SSL certificates"
@@ -78,7 +78,7 @@ sudo chown jupyterhub.jupyterhub /var/log/jupyterhub.log
 echo "creating run-jupyterhub.sh script"
 cat <<EOT >run-jupyterhub.sh
 #!/usr/bin/env bash
-nohup sudo su - jupyterhub -c "exec /home/ubuntu/${CLASSNAME}/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py >/var/log/jupyterhub.log 2>&1" > /tmp/nohup.out 2>&1
+nohup sudo su - jupyterhub -c "exec ${HOME}/${CLASSNAME}/bin/jupyterhub -f /etc/jupyterhub/jupyterhub_config.py >/var/log/jupyterhub.log 2>&1" > /tmp/nohup.out 2>&1
 EOT
 chmod a+x run-jupyterhub.sh
 
@@ -88,7 +88,7 @@ sudo groupadd jupyterhubusers
 sudo usermod -a -G jupyterhubusers ${INSTRUCTOR_USERNAME}
 sudo usermod -a -G shadow jupyterhub
 cat <<EOT >>sudoers-jupyterhub
-Cmnd_Alias JUPYTER_CMD = /home/ubuntu/${CLASSNAME}/bin/sudospawner
+Cmnd_Alias JUPYTER_CMD = ${HOME}/${CLASSNAME}/bin/sudospawner
 jupyterhub ALL=(%jupyterhubusers) NOPASSWD:JUPYTER_CMD
 EOT
 sudo mv sudoers-jupyterhub /etc/sudoers.d/jupyterhub
@@ -124,16 +124,22 @@ sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic
 sudo apt-get update -y
 sudo apt-get upgrade -y
 sudo apt-get install -y r-base
-mkdir -p /home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6
-Rscript -e 'install.packages("IRkernel", lib="/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6")'
-source /home/ubuntu/${CLASSNAME}/bin/activate
-Rscript -e "IRkernel::installspec(prefix='/home/ubuntu/${CLASSNAME}')"
+mkdir -p ${HOME}/R/x86_64-pc-linux-gnu-library/3.6
+Rscript -e "install.packages('IRkernel', lib='${HOME}/R/x86_64-pc-linux-gnu-library/3.6')"
+source ${HOME}/${CLASSNAME}/bin/activate
+Rscript -e "IRkernel::installspec(prefix='${HOME}/${CLASSNAME}')"
 deactivate
 exit
-sudo sed -i 's|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''/home/ubuntu/R/x86_64-pc-linux-gnu-library/3.6:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g' /etc/R/Renviron
+sudo sed -i "s|R_LIBS_SITE=${R_LIBS_SITE-'\''/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|R_LIBS_SITE=${R_LIBS_SITE-'\''${HOME}/R/x86_64-pc-linux-gnu-library/3.6:/usr/local/lib/R/site-library:/usr/lib/R/site-library:/usr/lib/R/library'\''}|g" /etc/R/Renviron
 echo "installing Ubuntu packages needed by Tidyverse"
 sudo apt-get install -y libxml2-dev libcurl4-openssl-dev libssl-dev
 
+cat <<EOF > ${HOME}/${CLASSNAME}/bin/start-python.sh
+#!/bin/bash
+exec env PYTHONPATH=\${HOME}/.local/lib/python3.6/site-packages ${HOME}/${CLASSNAME}/bin/python3 $@
+EOF
+chmod a+x ${HOME}/${CLASSNAME}/bin/start-python.sh
+sed -i "0,/python/ s|python|${HOME}/${CLASSNAME}/bin/start-python.sh|" ${HOME}/${CLASSNAME}/share/jupyter/kernels/python3/kernel.json
 echo "installing texlive"
 sudo apt-get install -y texlive
 
