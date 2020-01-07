@@ -10,8 +10,8 @@ while(defined(my $line = <STDIN>)) {
     my $onid = $fields[0];
     my $encpass = $fields[1];
     my $fullname = $fields[2];
-#    my $create_str = "sudo adduser -c \"" . $fullname . 
-    #	"\" --expiredate 2017-12-10 -p \'" . $encpass . "\' " . $onid;
-    my $create_str = "useradd -p \'" . $encpass . "\'" . $onid;
+#    my $create_str = "sudo adduser -c " . $fullname . 
+#    	" --expiredate 2017-12-10 -p \'" . $encpass . "\' " . $onid;
+    my $create_str = "sudo useradd -m -p \'" . $encpass . "\' -c " . $fullname . " -G jupyterhubusers " . $onid;
     print $create_str . "\n";
 }

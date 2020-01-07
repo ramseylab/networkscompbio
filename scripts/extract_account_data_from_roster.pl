@@ -9,6 +9,9 @@ while(defined(my $line = <STDIN>)) {
     if ($line =~ /^\s+Points Possible/) {
 	next;
     }
+    if ($line =~ /Student\, Test/) {
+	next;
+    }
     chomp($line);
     my @fields = split(/\t/, $line);
     my $fullname = $fields[0];
