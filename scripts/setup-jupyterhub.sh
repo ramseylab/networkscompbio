@@ -58,6 +58,8 @@ echo "c.PAMAuthenticator.open_sessions = False" >> jupyterhub_config.py
 echo "c.Spawner.cmd = '${HOME}/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
 echo "c.SudoSpawner.sudospawner_path = '${HOME}/${CLASSNAME}/bin/sudospawner'" >> jupyterhub_config.py
 sudo cp jupyterhub_config.py /etc/jupyterhub
+mkdir jupyterhub
+mv jupyterhub_config.py jupyterhub
 
 echo "setting up SSL certificates"
 sudo chmod 755 /etc/letsencrypt/live
@@ -153,9 +155,9 @@ echo "graphviz"
 sudo apt-get install -y graphviz libgraphviz-dev
 ${CLASSNAME}/bin/pip3 install graphviz pydot pygraphviz
 
-echo "setting up Jupyter notebook templates directory"
-sudo mkdir /templates
-sudo chown ubuntu.ubuntu /templates
-sudo su - ${INSTRUCTOR_USERNAME} -c "ln -s /templates templates"
-sudo chown ubuntu.ubuntu /home/${INSTRUCTOR_USERNAME}/templates
+echo "setting up Jupyter notebook shared directory"
+sudo mkdir /shared
+sudo chown ubuntu.ubuntu /shared
+sudo su - ${INSTRUCTOR_USERNAME} -c "ln -s /shared shared"
+sudo chown ubuntu.ubuntu /home/${INSTRUCTOR_USERNAME}/shared
 
